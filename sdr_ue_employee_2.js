@@ -4,6 +4,7 @@
  */
 define(['N/search'],
     function (search) {
+        // Using getText and getValue in afterSubmit on Custom Field
         return {
             afterSubmit: function (context) {
                 var employee = context.newRecord;
