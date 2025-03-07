@@ -2,11 +2,12 @@
  * @NApiVersion 2.0
  * @NScriptType UserEventScript
  */
-define(['N/record'],
+define(['N/record', 'N/redirect'],
     /**
      * @param {record} record 
+     * @param {redirect} redirect
      */
-    function (record) {
+    function (record, redirect) {
 
         return {
             afterSubmit: function (context) {
@@ -39,32 +40,46 @@ define(['N/record'],
                     //going to the sublist
                     //adding invite to the employee
                     event.selectNewLine({
-                        sublistId : 'attendee'
+                        sublistId: 'attendee'
                     })
                     event.setCurrentSublistValue({
-                        sublistId : 'attendee',
-                        fieldId : 'attendee',//here same name is there refer ss record browser
-                        value : employee.id
+                        sublistId: 'attendee',
+                        fieldId: 'attendee',//here same name is there refer ss record browser
+                        value: employee.id
                     })
                     event.commitLine({
-                        sublistId : 'attendee'
+                        sublistId: 'attendee'
                     })
 
                     //adding invite to the Supervisor
-                    event.selectNewLine({
-                        sublistId : 'attendee'
-                    })
-                    event.setCurrentSublistValue({
-                        sublistId : 'attendee',
-                        fieldId : 'attendee',//here same name is there refer ss record browser
-                        value : employee.getValue('supervisor')
-                    })
-                    event.commitLine({
-                        sublistId : 'attendee'
-                    })
+                    if (employee.getValue('supervisor')) {
+                        event.selectNewLine({
+                            sublistId: 'attendee'
+                        })
+                        event.setCurrentSublistValue({
+                            sublistId: 'attendee',
+                            fieldId: 'attendee',//here same name is there refer ss record browser
+                            value: employee.getValue('supervisor')
+                        })
+                        event.commitLine({
+                            sublistId: 'attendee'
+                        })
+                    }
 
                     event.save();
                 }
+
+                //send the params in the request
+                redirect.toSuitelet({
+                    scriptId: 'customscript_sdr_sl_update_emp_notes',
+                    deploymentId: 'customdeploy_sdr_sl_update_emp_notes',
+                    parameters: {
+                        //the key should be unique
+                        sdr_name: employee.getValue('entityid'),
+                        sdr_notes: employee.getValue('comments'),
+                        sdr_empid: employee.id
+                    }
+                })
             }
         }
     }
